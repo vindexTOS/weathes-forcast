@@ -1,5 +1,4 @@
 import React, { useEffect, useState, useRef } from "react";
-import Forest from "../utils/Forest.jpg";
 import { CiSearch, CiLocationOn } from "react-icons/ci";
 import { RiSunFill } from "react-icons/ri";
 import {
@@ -11,7 +10,7 @@ import {
   BsThermometerSun,
   BsThermometerHalf,
 } from "react-icons/bs";
-
+import Forcast from "./Forecast";
 import axios from "axios";
 
 export default function MainPage() {
@@ -20,12 +19,14 @@ export default function MainPage() {
   const url = `https://api.openweathermap.org/data/2.5/forecast?q=${location}&units=metric&appid=446b1001cea52469f7ca74f028b594b6`;
   const [data, setData] = useState({});
   const [weather, setWeather] = useState();
+  const [temp, setTemp] = useState({ current: 0, max: 0, min: 0 });
+  const [forcast, setForcast] = useState();
 
   useEffect(() => {
     axios.get(url).then((response) => {
       setData(response);
     });
-  }, [location]);
+  }, [{ location, forcast }]);
 
   const ApiLocation = () => {
     locatoinRef.current.focus();
@@ -36,6 +37,14 @@ export default function MainPage() {
     }
     console.log(data);
     setWeather(data.data.list[0].weather[0].main);
+    setTemp({
+      current: data.data.list[0].main.temp,
+      max: data.data.list[0].main.temp_max,
+      min: data.data.list[0].main.temp_min,
+    });
+    setForcast(data.data.list);
+
+    console.log(forcast);
   };
   const dataCheck = data.data === undefined;
   return (
@@ -64,35 +73,40 @@ export default function MainPage() {
         </div>
       </div>
       <section className="flex flex-col items-center justify-center mt-3 text-[2.3rem] ">
-        <h1 className="flex flex-row items-center justify-center">
-          <CiLocationOn />
+        <h1 className="flex flex-row items-center justify-center text-orange-600">
+          <CiLocationOn className="text-red-600" />
           {dataCheck ? "Empty " : data.data.city.name}
         </h1>
-        <h1 className="text-[2rem] flex flex-row items-center justify-center gap-2 mt-10">
+        <h1 className="text-[2rem] flex flex-row items-center justify-center gap-2 mt-10 text-orange-800">
           {weather === "Clouds" ? (
-            <BsCloudsFill />
+            <BsCloudsFill className="text-blue-500" />
           ) : weather === "Clear" ? (
-            <RiSunFill />
+            <RiSunFill className="text-orange-500" />
           ) : weather === "Drizzle" ? (
-            <BsFillCloudDrizzleFill />
+            <BsFillCloudDrizzleFill className="text-blue-800" />
           ) : weather === "Rain" ? (
-            <BsFillCloudRainHeavyFill />
+            <BsFillCloudRainHeavyFill className="text-blue-800" />
           ) : weather === "Snow" ? (
             <BsFillCloudSnowFill />
           ) : null}
 
           {dataCheck ? "Empty" : weather}
         </h1>
-        <h1 className="text-[5rem] flex flex-row items-center justify-center gap-2 mt-10">
-          {dataCheck ? "00" : data.data.list[0].main.temp}°
-          {data.data.list[0].main.temp < 0 ? (
-            <BsThermometerSnow />
-          ) : data.data.list[0].main.temp > 30 ? (
-            <BsThermometerSun />
+        <h1 className="text-[5rem] flex flex-row items-center justify-center text-white gap-2 mt-10">
+          {dataCheck ? "00" : temp.current}°
+          {temp.current < 0 ? (
+            <BsThermometerSnow className="text-blue-300" />
+          ) : temp.current > 30 ? (
+            <BsThermometerSun className="text-orange-800" />
           ) : (
-            <BsThermometerHalf />
+            <BsThermometerHalf className="text-yellow-300" />
           )}
         </h1>
+        <div className="text-[1rem] text-white">
+          <h2 className="gap-3">Max temp {temp.max}°</h2>
+          <h2 className="gap-3">Min temp {temp.min}°</h2>
+        </div>
+        <Forcast forcast={forcast} />
       </section>
     </main>
   );
